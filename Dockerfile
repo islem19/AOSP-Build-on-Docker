@@ -46,7 +46,6 @@ RUN echo "dash dash/sh boolean false" | debconf-set-selections
 RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
 
 #copy the entry script into the container
-COPY build/docker_entrypoint.sh /root/docker_entrypoint.sh
 
 #set volume
 RUN mkdir /aosp
