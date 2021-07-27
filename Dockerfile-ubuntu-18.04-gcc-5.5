@@ -1,0 +1,145 @@
+FROM ubuntu:18.04
+
+LABEL maintainer="Terry Simons <terry@hu.ma.ne>"
+
+WORKDIR /root/
+
+ENV USER root
+
+ENV PATH="/android_build/bin:${PATH}"
+
+RUN apt-get update && apt-get install -y \
+  ca-certificates \
+  gnupg
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV APT_LISTCHANGES_FRONTEND=none
+
+# Enable 32-bit package installations
+#
+# Install 32-bit packages by appending :i386 to the normal apt flows
+RUN dpkg --add-architecture i386
+
+# Add mirrors in case the main repository is offline.
+RUN echo "deb mirror://mirrors.ubuntu.com/mirrors.txt bionic main restricted" >> /etc/apt/sources.list
+RUN echo "deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-updates main restricted" >> /etc/apt/sources.list
+RUN echo "deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-backports main restricted" >> /etc/apt/sources.list
+RUN echo "deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-security main restricted" >> /etc/apt/sources.list
+
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get install -y \
+    bsdmainutils \
+    openjdk-8-jdk \
+    git-core \
+    flex \
+    bison \
+    gperf \
+    build-essential \
+    zip curl \
+    zlib1g-dev \
+    gcc-multilib \
+    g++-multilib \
+    libc6-dev-i386 \
+    lib32ncurses5-dev \
+    x11proto-core-dev \
+    libx11-dev \
+    lib32z-dev \
+    libgl1-mesa-dev \
+    libxml2-utils \
+    xsltproc \
+    unzip \
+    python \
+    python3 \
+    bc \
+    libc6 \
+    libxml-perl \
+    libtinfo-dev \
+    libncurses-dev \
+    libssl-dev \
+    rsync \
+    libmpfr-dev \
+    libisl15
+
+# Install repo
+RUN mkdir -p /android_build/bin && curl https://storage.googleapis.com/git-repo-downloads/repo > /android_build/bin/repo && chmod a+x /android_build/bin/repo
+
+RUN rm -rf /var/cache/apt && rm -rf /var/lib/apt/lists
+
+# See http://archive.ubuntu.com/ubuntu/pool/universe/g/
+ARG CC_VERSION=5
+ARG CC_PKG_VERSION=5.5.0-12ubuntu1
+
+# Install gcc ${CC_VERSION}
+RUN mkdir -p /android_build/gcc
+
+RUN curl http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-${CC_VERSION}/libasan2_${CC_PKG_VERSION}_amd64.deb > \
+         /android_build/gcc/libasan2_${CC_PKG_VERSION}_amd64.deb
+RUN curl http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-${CC_VERSION}/lib32asan2_${CC_PKG_VERSION}_amd64.deb > \
+         /android_build/gcc/lib32asan2_${CC_PKG_VERSION}_amd64.deb
+RUN curl http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-${CC_VERSION}/libx32asan2_${CC_PKG_VERSION}_amd64.deb > \
+         /android_build/gcc/libx32asan2_${CC_PKG_VERSION}_amd64.deb
+RUN curl http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-${CC_VERSION}/libmpx0_${CC_PKG_VERSION}_amd64.deb > \
+         /android_build/gcc/libmpx0_${CC_PKG_VERSION}_amd64.deb
+RUN curl http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-${CC_VERSION}/lib32mpx0_${CC_PKG_VERSION}_amd64.deb > \
+         /android_build/gcc/lib32mpx0_${CC_PKG_VERSION}_amd64.deb
+RUN curl http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-${CC_VERSION}/lib32gcc-${CC_VERSION}-dev_${CC_PKG_VERSION}_amd64.deb > \
+         /android_build/gcc/lib32gcc-${CC_VERSION}-dev_${CC_PKG_VERSION}_amd64.deb
+RUN curl http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-${CC_VERSION}/libx32gcc-${CC_VERSION}-dev_${CC_PKG_VERSION}_amd64.deb > \
+         /android_build/gcc/libx32gcc-${CC_VERSION}-dev_${CC_PKG_VERSION}_amd64.deb
+RUN curl http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-${CC_VERSION}/libgcc-${CC_VERSION}-dev_${CC_PKG_VERSION}_amd64.deb > \
+         /android_build/gcc/libgcc-${CC_VERSION}-dev_${CC_PKG_VERSION}_amd64.deb
+RUN curl http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-${CC_VERSION}/cpp-${CC_VERSION}_${CC_PKG_VERSION}_amd64.deb > \
+         /android_build/gcc/cpp-${CC_VERSION}_${CC_PKG_VERSION}_amd64.deb
+RUN curl http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-${CC_VERSION}/gcc-${CC_VERSION}-base_${CC_PKG_VERSION}_amd64.deb > \
+         /android_build/gcc/gcc-${CC_VERSION}-base_${CC_PKG_VERSION}_amd64.deb
+RUN curl http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-${CC_VERSION}/gcc-${CC_VERSION}_${CC_PKG_VERSION}_amd64.deb > \
+         /android_build/gcc/gcc-${CC_VERSION}_${CC_PKG_VERSION}_amd64.deb
+RUN curl http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-${CC_VERSION}/gcc-${CC_VERSION}-multilib_${CC_PKG_VERSION}_amd64.deb > \
+         /android_build/gcc/gcc-${CC_VERSION}-multilib_${CC_PKG_VERSION}_amd64.deb
+
+RUN dpkg -i \
+    /android_build/gcc/libasan2_${CC_PKG_VERSION}_amd64.deb \
+    /android_build/gcc/lib32asan2_${CC_PKG_VERSION}_amd64.deb \
+    /android_build/gcc/libx32asan2_${CC_PKG_VERSION}_amd64.deb \
+    /android_build/gcc/libmpx0_${CC_PKG_VERSION}_amd64.deb \
+    /android_build/gcc/lib32mpx0_${CC_PKG_VERSION}_amd64.deb \
+    /android_build/gcc/lib32gcc-${CC_VERSION}-dev_${CC_PKG_VERSION}_amd64.deb \
+    /android_build/gcc/libx32gcc-${CC_VERSION}-dev_${CC_PKG_VERSION}_amd64.deb \
+    /android_build/gcc/libgcc-${CC_VERSION}-dev_${CC_PKG_VERSION}_amd64.deb \
+    /android_build/gcc/cpp-${CC_VERSION}_${CC_PKG_VERSION}_amd64.deb \
+    /android_build/gcc/gcc-${CC_VERSION}-base_${CC_PKG_VERSION}_amd64.deb \
+    /android_build/gcc/gcc-${CC_VERSION}_${CC_PKG_VERSION}_amd64.deb \
+    /android_build/gcc/gcc-${CC_VERSION}-multilib_${CC_PKG_VERSION}_amd64.deb
+
+# Install g++ ${CC_VERSION}
+RUN mkdir -p /android_build/g++
+
+RUN curl http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-${CC_VERSION}/lib32stdc++-${CC_VERSION}-dev_${CC_PKG_VERSION}_amd64.deb > \
+         /android_build/g++/lib32stdc++-${CC_VERSION}-dev_${CC_PKG_VERSION}_amd64.deb
+RUN curl http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-${CC_VERSION}/libx32stdc++-${CC_VERSION}-dev_${CC_PKG_VERSION}_amd64.deb > \
+         /android_build/g++/libx32stdc++-${CC_VERSION}-dev_${CC_PKG_VERSION}_amd64.deb
+RUN curl http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-${CC_VERSION}/libstdc++-${CC_VERSION}-dev_${CC_PKG_VERSION}_amd64.deb > \
+         /android_build/g++/libstdc++-${CC_VERSION}-dev_${CC_PKG_VERSION}_amd64.deb
+RUN curl http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-${CC_VERSION}/g++-${CC_VERSION}_${CC_PKG_VERSION}_amd64.deb > \
+         /android_build/g++/g++-${CC_VERSION}_${CC_PKG_VERSION}_amd64.deb
+RUN curl http://archive.ubuntu.com/ubuntu/pool/universe/g/gcc-${CC_VERSION}/g++-${CC_VERSION}-multilib_${CC_PKG_VERSION}_amd64.deb > \
+         /android_build/g++/g++-${CC_VERSION}-multilib_${CC_PKG_VERSION}_amd64.deb
+
+RUN dpkg -i \
+    /android_build/g++/lib32stdc++-${CC_VERSION}-dev_${CC_PKG_VERSION}_amd64.deb \
+    /android_build/g++/libx32stdc++-${CC_VERSION}-dev_${CC_PKG_VERSION}_amd64.deb \
+    /android_build/g++/libstdc++-${CC_VERSION}-dev_${CC_PKG_VERSION}_amd64.deb \
+    /android_build/g++/g++-${CC_VERSION}_${CC_PKG_VERSION}_amd64.deb \
+    /android_build/g++/g++-${CC_VERSION}-multilib_${CC_PKG_VERSION}_amd64.deb
+
+# Set gcc ${CC_VERSION} and g++ ${CC_VERSION} as default
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${CC_VERSION} 44
+RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-${CC_VERSION} 44
+
+# Change dash to bash
+RUN echo "dash dash/sh boolean false" | debconf-set-selections
+RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
+
+# Set working directory
+RUN mkdir /aosp
+WORKDIR /aosp

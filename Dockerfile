@@ -8,13 +8,10 @@ ENV USER root
 
 ENV PATH="/android_build/bin:${PATH}"
 
-RUN echo "deb mirror://mirrors.ubuntu.com/mirrors.txt xenial main restricted universe multiverse" > /etc/apt/sources.list.new
-RUN echo "deb mirror://mirrors.ubuntu.com/mirrors.txt xenial-updates main restricted universe multiverse" >> /etc/apt/sources.list.new
-RUN echo "deb mirror://mirrors.ubuntu.com/mirrors.txt xenial-backports main restricted universe multiverse" >> /etc/apt/sources.list.new
-RUN echo "deb mirror://mirrors.ubuntu.com/mirrors.txt xenial-security main restricted universe multiverse" >> /etc/apt/sources.list.new
-RUN cat /etc/apt/sources.list >> /etc/apt/sources.list.new
-RUN mv /etc/apt/sources.list.new /etc/apt/sources.list
-RUN cat /etc/apt/sources.list
+RUN echo "deb mirror://mirrors.ubuntu.com/mirrors.txt xenial main restricted" >> /etc/apt/sources.list
+RUN echo "deb mirror://mirrors.ubuntu.com/mirrors.txt xenial-updates main restricted" >> /etc/apt/sources.list
+RUN echo "deb mirror://mirrors.ubuntu.com/mirrors.txt xenial-backports main restricted" >> /etc/apt/sources.list
+RUN echo "deb mirror://mirrors.ubuntu.com/mirrors.txt xenial-security main restricted" >> /etc/apt/sources.list
 
 RUN apt-get update
 
