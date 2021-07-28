@@ -4,9 +4,21 @@ LABEL maintainer="Terry Simons <terry@hu.ma.ne>"
 
 WORKDIR /root/
 
-ENV USER root
+ARG DOCKER_USER=root
+ARG DOCKER_USER_ID=0
+ARG DOCKER_GROUP_ID=0
+ARG DOCKER_USER_HOME=/root
+ARG DOCKER_JAVA_VERSION=openjdk-8-jdk
 
 ENV PATH="/android_build/bin:${PATH}"
+ENV DOCKER_USER=${DOCKER_USER}
+ENV DOCKER_USER_ID=${DOCKER_USER_ID}
+ENV DOCKER_GROUP_ID=${DOCKER_GROUP_ID}
+ENV DOCKER_USER_HOME=${DOCKER_USER_HOME}
+ENV DOCKER_JAVA_VERSION=${DOCKER_JAVA_VERSION}
+
+RUN groupadd --gid ${DOCKER_GROUP_ID} ${DOCKER_USER} || echo "Group add failed."
+RUN useradd --home-dir=${DOCKER_USER_HOME} --create-home --uid ${DOCKER_USER_ID} --gid ${DOCKER_GROUP_ID} ${DOCKER_USER} || echo "User add failed."
 
 RUN apt-get update && apt-get install -y \
   ca-certificates \
@@ -29,7 +41,7 @@ RUN echo "deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-security main restr
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y \
     bsdmainutils \
-    openjdk-8-jdk \
+    ${DOCKER_JAVA_VERSION} \
     git-core \
     flex \
     bison \
@@ -135,5 +147,8 @@ RUN echo "dash dash/sh boolean false" | debconf-set-selections
 RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
 
 # Set working directory
-RUN mkdir /aosp
+RUN mkdir /aosp && chown ${DOCKER_USER}:${DOCKER_USER_GROUP} /aosp
+
+USER ${DOCKER_USER}
+
 WORKDIR /aosp
