@@ -70,7 +70,12 @@ RUN apt-get install -y \
     libssl-dev \
     rsync \
     libmpfr-dev \
-    libisl15
+    libisl15 \
+    libxml-simple-perl \
+    kmod \
+    vim \
+    cgpt \
+    cpio
 
 # Install repo
 RUN mkdir -p /android_build/bin && curl https://storage.googleapis.com/git-repo-downloads/repo > /android_build/bin/repo && chmod a+x /android_build/bin/repo
